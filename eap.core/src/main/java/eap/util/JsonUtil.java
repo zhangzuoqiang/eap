@@ -40,6 +40,18 @@ public class JsonUtil {
 		}
 	}
 	
+	public static String toPrettyJson(Object obj) {
+		if (obj == null) {
+			return null;
+		}
+		
+		try {
+			return getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+		} catch (Exception e) {
+			throw new IllegalArgumentException(e.getMessage(), e);
+		}
+	}
+	
 	public static <T> T parseJson(String jsonStr, Class<T> valueType) {
 		if (StringUtils.isBlank(jsonStr)) {
 			return null;
