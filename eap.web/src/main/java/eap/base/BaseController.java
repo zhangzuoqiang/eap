@@ -77,6 +77,9 @@ public class BaseController {
 		RequestMethod.TRACE
 	};
 	public static final int DEFAULT_DOWNLOAD_BUFFER_SIZE = 4096;
+	public static final String REST__FORMAT_JSON = "_format=json";
+	public static final String REST__FORMAT_XML = "_format=xml";
+	public static final String REST__FORMAT_HTML = "_format=html";
 	
 	public Logger logger = LoggerFactory.getLogger(this.getClass());
 	
