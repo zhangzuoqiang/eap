@@ -489,6 +489,12 @@
 				<artifactId>hessian</artifactId>
 				<version>4.0.7</version>
 			</dependency>
+			<dependency>
+				<groupId>org.testng</groupId>
+				<artifactId>testng</artifactId>
+				<version>6.1.1</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -567,6 +573,13 @@
 			</plugin>
 			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-source-plugin</artifactId> 
 				</plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.17</version>
+				<!-- <configuration> <suiteXmlFiles> <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile> 
+					</suiteXmlFiles> </configuration> -->
+			</plugin>
 		</plugins>
 		<!-- <resources>
 			<resource>
