@@ -59,6 +59,8 @@ public class CxfUtil  {
 			HTTPConduit httpConduit = (HTTPConduit) conduit;
 			HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
 			
+			boolean isChange = false;
+			
 			Env env = EapContext.getEnv();
 			boolean proxy = Boolean.parseBoolean(env.getProperty("app.proxy", "false"));
 			if (proxy) {
@@ -69,9 +71,6 @@ public class CxfUtil  {
 				httpClientPolicy.setProxyServerType(ProxyServerType.HTTP);
 				httpClientPolicy.setProxyServer(proxyHost);
 				httpClientPolicy.setProxyServerPort(proxyPort);
-				httpClientPolicy.setConnectionTimeout(Long.valueOf(env.getProperty("app.net.connectionTimeout", "30000")));
-				httpClientPolicy.setReceiveTimeout(Long.valueOf(env.getProperty("app.net.soTimeout", "60000")));
-				httpConduit.setClient(httpClientPolicy);
 				
 				String proxyUsername = env.getProperty("app.proxy.username");
 				if (StringUtil.isNotBlank(proxyUsername)) {
@@ -79,6 +78,22 @@ public class CxfUtil  {
 					httpConduit.getProxyAuthorization().setUserName(proxyUsername);
 					httpConduit.getProxyAuthorization().setPassword(proxyPassword);
 				}
+				
+				isChange = true;
+			}
+			if (ReflectUtil.getFieldValue(httpClientPolicy, "connectionTimeout") == null) {
+				httpClientPolicy.setConnectionTimeout(Long.valueOf(env.getProperty("app.net.connectionTimeout", "30000")));
+				
+				isChange = true;
+			}
+			if (ReflectUtil.getFieldValue(httpClientPolicy, "receiveTimeout") == null) {
+				httpClientPolicy.setReceiveTimeout(Long.valueOf(env.getProperty("app.net.soTimeout", "60000")));
+				
+				isChange = true;
+			}
+			
+			if (isChange) {
+				httpConduit.setClient(httpClientPolicy);
 			}
 		}
 		
