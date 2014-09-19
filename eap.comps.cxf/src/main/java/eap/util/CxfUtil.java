@@ -69,8 +69,8 @@ public class CxfUtil  {
 				httpClientPolicy.setProxyServerType(ProxyServerType.HTTP);
 				httpClientPolicy.setProxyServer(proxyHost);
 				httpClientPolicy.setProxyServerPort(proxyPort);
-				httpClientPolicy.setConnectionTimeout(Long.valueOf(env.getProperty("app.net.connectionTimeout", "15000")));
-				httpClientPolicy.setReceiveTimeout(Long.valueOf(env.getProperty("app.net.receiveTimeout", "30000")));
+				httpClientPolicy.setConnectionTimeout(Long.valueOf(env.getProperty("app.net.connectionTimeout", "30000")));
+				httpClientPolicy.setReceiveTimeout(Long.valueOf(env.getProperty("app.net.soTimeout", "60000")));
 				httpConduit.setClient(httpClientPolicy);
 				
 				String proxyUsername = env.getProperty("app.proxy.username");
