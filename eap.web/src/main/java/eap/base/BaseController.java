@@ -367,8 +367,8 @@ public class BaseController {
 		return this.setException(e, null);
 	}
 	
-	public void alertMsg(String message) {
-		this.getWebEvents().alert(message);
+	public void alertInfoMsg(String message) {
+		this.getWebEvents().alert(WebEvents.WEB_EVENTS_ALERT_INFO, message);
 	}
 	public void alertErrorMsg(String message) {
 		this.getWebEvents().alert(WebEvents.WEB_EVENTS_ALERT_ERROR, message);
