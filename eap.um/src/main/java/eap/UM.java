@@ -3,8 +3,6 @@ package eap;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -324,59 +322,16 @@ public class UM {
 		return (appUMServer != null && appUMServer.length() > 0) ? true : false;
 	}
 	
+	public static void setNodeData(String path, byte[] data) throws Exception {
+		if (isStarted()) {
+			client.setData().forPath(path, data);
+		}
+	}
+	
 	public static class NodeListener {
 		public void nodeChanged(CuratorFramework client, ChildData childData) throws Exception {
 		}
 		public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
-		}
-	}
-	
-	private static class CliNodeListener extends NodeListener {
-		public void nodeChanged(CuratorFramework client, ChildData childData) throws Exception {
-			byte[] data = childData.getData();
-			if (data != null && data.length > 0) {
-				String dataStr = new String(data).trim();
-				logger.info("execute cli: " + dataStr);
-				
-				String[] cli = dataStr.split(" ");
-				String cmd = cli[0];
-				String[] args = cli.length >= 2 ? Arrays.copyOfRange(cli, 1, cli.length) : null;
-				
-				try {
-					if ("invoke".equalsIgnoreCase(cmd)) {
-						invokeMethod(args);
-					} else {
-						throw new UnsupportedOperationException("cmd " + cmd + " unsupported");
-					}
-				} catch (Exception e) {
-					logger.error(e.getMessage(), e);
-				}
-			}
-		}
-		
-		private void invokeMethod(String[] args) throws Exception {
-			if (args == null || args.length < 2) {
-				throw new IllegalArgumentException("cli args error. format:\"className method arg1 arg2 ...\"");
-			}
-			
-			String className = args[0];
-			String methodName = args[1];
-			String[] methodArgs = args.length >= 3 ? Arrays.copyOfRange(args, 2, args.length) : null;
-			
-			Class clazz = Class.forName(className);
-			Method method = methodArgs != null ? clazz.getMethod(methodName, String[].class) : clazz.getMethod(methodName, null);
-			Object obj = null;
-			if ((method.getModifiers() & Modifier.STATIC) != 0) {
-				obj = clazz;
-			} else {
-				obj = clazz.newInstance();
-			}
-			
-			if (methodArgs != null) {
-				method.invoke(obj, methodArgs);
-			} else {
-				method.invoke(obj);
-			}
 		}
 	}
 	
