@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import eap.EapContext;
-import eap.Env;
+import eap.WebEnv;
 import eap.comps.datastore.DataStore;
 import eap.comps.token.TokenExpiredException;
 import eap.comps.token.TokenManager;
@@ -50,9 +50,9 @@ public class TokenSessionStoreInterceptor extends HandlerInterceptorAdapter {
 				}
 			}
 			
-			Env env = EapContext.getEnv();
-			String tokenStoreId = env.getProperty("app.web.form.tokenStoreId", "__formTokenStore");
-			String tokenField = env.getProperty("app.web.form.tokenField", "__ft");
+			WebEnv env = (WebEnv)EapContext.getEnv();
+			String tokenStoreId = env.getFormTokenStoreKey();
+			String tokenField = env.getFormTokenField();
 			
 			String token = null;
 			if (request instanceof MultipartHttpServletRequest) {
