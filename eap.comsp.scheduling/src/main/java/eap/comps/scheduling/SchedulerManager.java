@@ -35,7 +35,7 @@ import org.springframework.core.Ordered;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.util.Assert;
 
-import eap.UM;
+import eap.um.UM;
 import eap.util.BeanUtil;
 import eap.util.StringUtil;
 

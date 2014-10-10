@@ -1,4 +1,4 @@
-package eap;
+package eap.um;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -322,17 +323,45 @@ public class UM {
 		return (appUMServer != null && appUMServer.length() > 0) ? true : false;
 	}
 	
-	public static void setNodeData(String path, byte[] data) throws Exception {
-		if (isStarted()) {
-			client.setData().forPath(path, data);
-		}
-	}
-	
 	public static class NodeListener {
 		public void nodeChanged(CuratorFramework client, ChildData childData) throws Exception {
 		}
 		public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
 		}
+	}
+	
+	public static void setNodeData(String path, byte[] data) {
+		if (isStarted()) {
+			try {
+				client.setData().forPath(path, data);
+			} catch (Exception e) {
+				throw new IllegalArgumentException(e.getMessage(), e);
+			}
+		}
+	}
+	public static String getNodeData(String path) {
+		if (isStarted()) {
+			try {
+				byte[] data = client.getData().forPath(path);
+				return data != null ? new String(data) : null;
+			} catch (Exception e) {
+				throw new IllegalArgumentException(e.getMessage(), e);
+			}
+		}
+		return null;
+	}
+	public static List<String> getNodeList(String path) {
+		if (isStarted()) {
+			try {
+				return client.getChildren().forPath(path);
+			} catch (Exception e) {
+				throw new IllegalArgumentException(e.getMessage(), e);
+			}
+		}
+		return Collections.EMPTY_LIST;
+	}
+	public static CuratorFramework getClient() {
+		return client;
 	}
 	
 	public static void main(String[] args) throws Exception {
