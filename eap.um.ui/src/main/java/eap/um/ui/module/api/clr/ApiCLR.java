@@ -170,7 +170,7 @@ public class ApiCLR extends BaseController {
 		@RequestParam("key") String key,
 		HttpServletRequest request)
 	{
-		String value = this.getParameterAsCleanHtml("value");
+		String value = request.getParameter("value"); // this.getParameterAsCleanHtml("value");
 		UMMirror umMirror = getUmMirror(umServer);
 		if (umMirror == null 
 				|| appName == null || appName.length() == 0 
