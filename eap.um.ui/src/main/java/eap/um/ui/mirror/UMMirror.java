@@ -1,11 +1,14 @@
 package eap.um.ui.mirror;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -18,10 +21,13 @@ import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.apache.zookeeper.ZooDefs.Ids;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eap.util.BufferedTimer;
 import eap.util.JsonUtil;
 
 /**
@@ -47,7 +53,7 @@ public class UMMirror {
 	private Map<String, AppVO> umMirror = new ConcurrentHashMap<String, AppVO>();
 	public static final String UM_ROOT = "/EAP_UM/APP";
 	
-	
+	private BufferedTimer umRefreshTimer =  new BufferedTimer("umRefreshTimer", true);
 	
 	public UMMirror(String umServer) throws Exception {
 		Integer retryNum = Integer.MAX_VALUE;
@@ -138,15 +144,23 @@ public class UMMirror {
 		});
 		nodeWatcher.watch(UM_ROOT);
 	}
-	private void refresh() throws Exception {
-		umMirror.clear();
-		
-		List<String> _appList = client.getChildren().forPath(UM_ROOT);
-		if (_appList != null && _appList.size() > 0) {
-			for (String _app : _appList) {
-				refresh_APP(_app, false);
+	private void refresh() {
+		umRefreshTimer.schedule(new TimerTask() {
+			public void run() {
+				try {
+					umMirror.clear();
+					
+					List<String> _appList = client.getChildren().forPath(UM_ROOT);
+					if (_appList != null && _appList.size() > 0) {
+						for (String _app : _appList) {
+							refresh_APP(_app, false);
+						}
+					}
+				} catch (Exception e) {
+					logger.error(e.getMessage(), e);
+				}
 			}
-		}
+		}, 1000);
 	}
 	
 	private void refresh_APP(String _app, boolean deleteAction) throws Exception {
@@ -275,6 +289,7 @@ public class UMMirror {
 	}
 
 	public void shutdown() {
+		umRefreshTimer.cannel();
 		if (client != null && client.getState() == CuratorFrameworkState.STARTED) {
 			client.close();
 		}
@@ -297,6 +312,13 @@ public class UMMirror {
 			}
 			list.add(item);
 		}
+//		Collections.sort(list, new Comparator<Map<String, Object>>() {
+//			@Override
+//			public int compare(Map<String, Object> m1, Map<String, Object> m2) {
+//				return m1.get("appName").toString().compareTo(m2.get("appName").toString());
+//			}
+//		});
+		
 		return list;
 	}
 	public List<Map<String, Object>> getAppServerList(String appName) {
@@ -402,6 +424,91 @@ public class UMMirror {
 			}
 		}
 	}
+	public void addApp(String appName) {
+		if (appName == null || appName.length() == 0) {
+			return;
+		}
+		
+		String umConfigNS = String.format("/EAP_UM/APP/%s/config", appName);
+		String umRuntimeNS = String.format("/EAP_UM/APP/%s/runtime", appName);
+		String serverPath = umRuntimeNS + "/server";
+		String lockingPath = umRuntimeNS + "/locking";
+		String cliPath = umRuntimeNS + "/cli";
+		String loaderPath = umRuntimeNS + "/loader";
+		
+		for (String p : new String[] {umConfigNS, umRuntimeNS, serverPath, lockingPath, cliPath, loaderPath}) {
+			try {
+				if (client.checkExists().forPath(p) == null) {
+					client.create()
+						.creatingParentsIfNeeded()
+						.withMode(CreateMode.PERSISTENT)
+						.withACL(Ids.OPEN_ACL_UNSAFE)
+						.forPath(p, new byte[0]);
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+	}
+	
+	public void addAppVersion(String appName, String appVersion) {
+		if (appName == null || appName.length() == 0 || appVersion == null || appVersion.length() == 0) {
+			return;
+		}
+		
+		String p = String.format("/EAP_UM/APP/%s/config/%s", appName, appVersion);
+		try {
+			if (client.checkExists().forPath(p) == null) {
+				client.create()
+					.creatingParentsIfNeeded()
+					.withMode(CreateMode.PERSISTENT)
+					.withACL(Ids.OPEN_ACL_UNSAFE)
+					.forPath(p, new byte[0]);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+	
+
+	public void setAppConfig(String appName, String appVersion, String key, String value) {
+		if (appName == null || appName.length() == 0 
+			|| appVersion == null || appVersion.length() == 0
+			|| key == null || key.length() == 0
+			|| value == null || value.length() == 0) {
+			return;
+		}
+		String p = String.format("/EAP_UM/APP/%s/config/%s/%s", appName, appVersion, key);
+		
+		try {
+			if (client.checkExists().forPath(p) == null) {
+				client.create()
+					.creatingParentsIfNeeded()
+					.withMode(CreateMode.PERSISTENT)
+					.withACL(Ids.OPEN_ACL_UNSAFE)
+					.forPath(p, value.getBytes());
+			} else {
+				client.setData().forPath(p, value.getBytes());
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+	
+	public void deleteAppConfig(String appName, String appVersion, String key) {
+		if (appName == null || appName.length() == 0 
+			|| appVersion == null || appVersion.length() == 0
+			|| key == null || key.length() == 0) {
+			return;
+		}
+		String p = String.format("/EAP_UM/APP/%s/config/%s/%s", appName, appVersion, key);
+		try {
+			client.delete().forPath(p);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+	
 	/* 
 	 * ====================
 	 * VO
@@ -500,16 +607,18 @@ public class UMMirror {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		String s = "/EAP_UM/APP/com.enci.open/runtime/loader/a-b-c:123";
-		if (s.matches("^/EAP_UM/APP/[^/]+/runtime/loader/[^/]+$")) { // \u0088
-			System.out.println("123");
-		}
-		System.out.println((int)'-');
-		System.out.println(Integer.parseInt("45", 16));
+//		String s = "/EAP_UM/APP/com.enci.open/runtime/loader/a-b-c:123";
+//		if (s.matches("^/EAP_UM/APP/[^/]+/runtime/loader/[^/]+$")) { // \u0088
+//			System.out.println("123");
+//		}
+//		System.out.println((int)'-');
+//		System.out.println(Integer.parseInt("45", 16));
 		
 //		UMMirror mirror = new UMMirror("10.1.43.153:2181");
 //		System.out.println(mirror.umMirror);
 //		System.out.println(mirror.getAppConfig("com.enci.open", "1.0.0"));;
 		
 	}
+
+	
 }

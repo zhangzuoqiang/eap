@@ -121,6 +121,12 @@ body {
 			<h4>应用列表</h4>
 			<div id="app-list-box" class="list-group app-list">
 			</div>
+			<div style="display:none">
+				<form id="add-app-form" class="form-horizontal" role="form">
+					<input type="text" class="form-control" id="appName" name="appName" placeholder="应用名称">
+				</form>
+			</div>
+			<div><button id="add-app-btn" class="btn btn-default btn-sm">添加应用</button></div>
 			<script id="app-list-item-tpl" type="text/x-jquery-tmpl">
 				<a href="#" class="list-group-item ${'$'}{cssClass}" data-id="${'$'}{appName}"><span class="badge">${'$'}{serverCount}</span>${'$'}{appName}</a>
 			</script>
@@ -187,7 +193,12 @@ body {
 							<script id="app-version-list-item-tpl" type="text/x-jquery-tmpl">
 								<a href="#" class="list-group-item ${'$'}{cssClass}" data-id="${'$'}{version}">${'$'}{version}</a>
 							</script>
-							<div><button class="btn btn-default btn-sm">添加版本</button></div>
+							<div style="display:none">
+								<form id="add-version-form" class="form-horizontal" role="form">
+									<input type="text" class="form-control" id="appVersion" name="appVersion" placeholder="版本号">
+								</form>
+							</div>
+							<div><button id="add-version-btn" class="btn btn-default btn-sm">添加版本</button></div>
 						</div>
 						<div class="col-md-10">
 							<table class="table table-hover">
@@ -205,15 +216,21 @@ body {
 										<td>
 											<div class="btn-toolbar" role="toolbar">
 												<div class="btn-group btn-group-sm">
-													<button type="button" class="btn btn-info">修改</button>
-													<button type="button" class="btn btn-danger">删除</button>
+													<button type="button" class="btn btn-info modify-config-btn">修改</button>
+													<button type="button" class="btn btn-danger delete-config-btn">删除</button>
 												</div>
 											</div>
 										</td>
 									</tr>
 								</script>
 							</table>
-							<div><button class="btn btn-default btn-sm">添加配置</button></div>
+							<div style="display:none">
+								<form id="add-config-form" class="form-horizontal" role="form">
+									<input type="text" class="form-control" id="configAttrKey" name="configAttrKey" placeholder="键">
+									<input type="text" class="form-control" id="configAttrValue" name="configAttrValue" placeholder="值">
+								</form>
+							</div>
+							<div><button id="add-config-btn" class="btn btn-default btn-sm">添加配置</button></div>
 						</div>
 					</div>
 				</div>
@@ -281,10 +298,18 @@ body {
 	</div>
 </div>
 <script src="<e:url value='/static/lib/bootstrap-3.2.0/js/bootstrap.min.js' />"></script>
+<script src="<e:url value='/static/scripts/jquery.bootstrap.min.js' />"></script>
 <script src="<e:url value='/static/scripts/jquery.tmpl.min.js' />"></script>
 <script type="text/javascript">
+	/* ----------- GLOBAL ----------- */
 	var SESSION = {
-		umServer:  '${firstUmServers}'
+		umServer:  '${firstUmServers}',
+		interval: {
+			loadTabPanelTask: 5000,
+			loadAppListTask: 5000,
+			loadAppConfigListTask: 10000,
+			loadRuntimeAppConfigListTask: 10000,
+		}
 	};
 	
 	function ajax(options) {
@@ -359,7 +384,7 @@ body {
 		function loadTabPanel(appName, tab) {
 			Timer.start('loadTabPanelTask', function() {
 				eval('loadTabPanel_' + tab)(appName);
-			}, 5000, true);
+			}, SESSION.interval.loadTabPanelTask, true);
 		};
 		$('.app-detail-panel .nav-tabs').on('click', 'a', function(e) {
 			var appName = SESSION.appName;
@@ -426,7 +451,7 @@ body {
 				}
 			});
 		}
-		Timer.start('loadAppListTask', loadAppList, 5000, true);
+		Timer.start('loadAppListTask', loadAppList, SESSION.interval.loadAppListTask, true);
 		
 		/* ---------- RUNTIME ------------ */
 		var runtimeAppDetailsListBox = $('#runtime-app-details-list-box'),
@@ -443,7 +468,7 @@ body {
 			var appVersion = item.attr('data-app-version');
 			Timer.start('loadTabPanelTask', 'loadRuntimeAppConfigListTask', function() {
 				loadRuntimeAppConfigList(SESSION.appName, appVersion);
-			}, 10000, true);
+			}, SESSION.interval.loadRuntimeAppConfigListTask, true);
 			
 			return false;
 			
@@ -507,7 +532,7 @@ body {
 			
 			Timer.start('loadTabPanelTask', 'loadAppConfigListTask', function() {
 				loadAppConfigList(SESSION.appName, currVersion);
-			}, 10000, true);
+			}, SESSION.interval.loadAppConfigListTask, true);
 			
 			return false;
 		});
@@ -675,6 +700,186 @@ body {
 		/* Timer.start('showTask', function() {
 			console.dir(Timer)
 		}, 1000, true); */
+		
+		
+		/* DIALOG */
+		$('#add-app-btn').on('click', function(e) {
+			var appNameEl = $('#appName');
+			appNameEl.val('');
+			
+			$('#add-app-form').dialog({
+				title: '添加应用',
+				buttons: [{
+					text: '保存',
+					'class': 'btn-primary',
+					hotKey: 13,
+					click: function() {
+						var _t = this, 
+							appNameVal = appNameEl.val();
+						if (!appNameVal) {
+							appNameEl.focus();
+							return false;
+						}
+						
+						ajax({
+							url: '<e:url value="${P.API_ADD_APP}" />',
+							type: 'POST',
+							data: {umServer: SESSION.umServer, appName: appNameVal},
+							complete: function() {
+								$(_t).dialog('close');
+								setTimeout(loadAppList, 1300);
+							}
+						});
+					}
+				}, {
+					text: '取消',
+					'class': 'btn-default',
+					click: function() {
+						$(this).dialog('close');
+					}
+				}]
+			});
+		});
+		
+		$('#add-version-btn').on('click', function(e) {
+			if (!SESSION.appName) {
+				alert('请选择应用');
+				return false;
+			}
+			
+			var appVersionEl = $('#appVersion');
+			appVersionEl.val('');
+			
+			$('#add-version-form').dialog({
+				title: '添加版本',
+				buttons: [{
+					text: '保存',
+					'class': 'btn-primary',
+					hotKey: 13,
+					click: function() {
+						var _t = this, 
+							appVersionVal = appVersionEl.val();
+						if (!appVersionVal) {
+							appVersionEl.focus();
+							return false;
+						}
+						
+						ajax({
+							url: '<e:url value="${P.API_ADD_APP_VERSION}" />',
+							type: 'POST',
+							data: {umServer: SESSION.umServer, appName: SESSION.appName, appVersion: appVersionVal},
+							complete: function() {
+								$(_t).dialog('close');
+								setTimeout(function() {
+									loadTabPanel_config(SESSION.appName);
+								}, 1300);
+							}
+						});
+					}
+				}, {
+					text: '取消',
+					'class': 'btn-default',
+					click: function() {
+						$(this).dialog('close');
+					}
+				}]
+			});
+		});
+		
+		function showConfigForm(initData){
+			if (!SESSION.appName) {
+				alert('请选择应用');
+				return false;
+			}
+			
+			var appVersion = SESSION[SESSION.appName].config.currVersion;
+			if (!appVersion) {
+				alert('请选择配置版本');
+				return false;
+			}
+			
+			var configAttrKeyEl = $('#configAttrKey'),
+				configAttrValueEl = $('#configAttrValue');
+			configAttrKeyEl.val(initData.key || '');
+			configAttrValueEl.val(initData.value || '');
+			
+			$('#add-config-form').dialog({
+				title: '保存配置属性',
+				buttons: [{
+					text: '保存',
+					'class': 'btn-primary',
+					hotKey: 13,
+					click: function() {
+						var _t = this, 
+							configAttrKeyVal = configAttrKeyEl.val();
+						if (!configAttrKeyVal) {
+							configAttrKeyEl.focus();
+							return false;
+						}
+						var configAttrValueVal = configAttrValueEl.val();
+						if (!configAttrValueVal) {
+							configAttrValueEl.focus();
+							return false;
+						}
+						
+						ajax({
+							url: '<e:url value="${P.API_SET_APP_CONFIG}" />',
+							type: 'POST',
+							data: {umServer: SESSION.umServer, appName: SESSION.appName, appVersion: appVersion, key: configAttrKeyVal, value: configAttrValueVal},
+							complete: function() {
+								$(_t).dialog('close');
+								setTimeout(function() {
+									loadAppConfigList(SESSION.appName, appVersion);
+								}, 1300);
+							}
+						});
+					}
+				}, {
+					text: '取消',
+					'class': 'btn-default',
+					click: function() {
+						$(this).dialog('close');
+					}
+				}]
+			});
+		}
+		
+		$('#add-config-btn').on('click', function(e) {
+			showConfigForm({key: '', value: ''});
+		});
+		
+		$('#app-config-list-box').on('click', '.modify-config-btn', function(e) {
+			var tds = $(e.currentTarget).parents('tr').children('td'),
+				key = tds.eq(0).text(),
+				value = tds.eq(1).text();
+			showConfigForm({key: key, value: value});
+		});
+		$('#app-config-list-box').on('click', '.delete-config-btn', function(e) {
+			var tds = $(e.currentTarget).parents('tr').children('td'),
+				key = tds.eq(0).text(),
+				value = tds.eq(1).text();
+			
+			var appVersion = SESSION[SESSION.appName].config.currVersion;
+			$.messager.confirm('确认', '是否删除 ' + key + ' ?', function() {
+				debugger;
+				ajax({
+					url: '<e:url value="${P.API_DELETE_APP_CONFIG}" />',
+					type: 'POST',
+					data: {umServer: SESSION.umServer, appName: SESSION.appName, appVersion: appVersion, key: key},
+					complete: function() {
+						$(_t).dialog('close');
+						setTimeout(function() {
+							loadAppConfigList(SESSION.appName, appVersion);
+						}, 1300);
+					}
+				});
+			});
+		});
+		
+		$.messager.model = {
+			ok:{ text: '确认', classed: 'btn-primary' },
+			cancel: { text: "取消", classed: 'btn-default' }
+		};
 	});
 </script>
 </body>

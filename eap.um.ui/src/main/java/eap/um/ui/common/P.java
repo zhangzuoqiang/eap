@@ -24,4 +24,9 @@ public interface P {
 	String API_APP_VERSION_LIST = "/api/appVersionList.rest";
 	String API_APP_SERVER_CLI_LIST = "/api/appServerCliList.rest";
 	String API_EXEC_CMD = "/api/execCmd.rest";
+	
+	String API_ADD_APP = "/api/addApp.rest";
+	String API_ADD_APP_VERSION = "/api/addAppVersion.rest";
+	String API_SET_APP_CONFIG = "/api/setAppConfig.rest";
+	String API_DELETE_APP_CONFIG = "/api/deleteAppConfig.rest";
 }

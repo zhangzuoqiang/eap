@@ -127,4 +127,81 @@ public class ApiCLR extends BaseController {
 		umMirror.execCmd(appName, servers, cmd);
 		return true;
 	}
+	
+	@RequestMapping(value=P.API_ADD_APP, method=RequestMethod.POST)
+	@ResponseBody
+	public Object addApp(
+		@RequestParam("umServer") String umServer, 
+		@RequestParam("appName") String appName,
+		HttpServletRequest request)
+	{
+		UMMirror umMirror = getUmMirror(umServer);
+		if (umMirror == null || appName == null || appName.length() == 0) {
+			return false;
+		}
+		
+		umMirror.addApp(appName);
+		return true;
+	}
+	
+	@RequestMapping(value=P.API_ADD_APP_VERSION, method=RequestMethod.POST)
+	@ResponseBody
+	public Object addAppVersion(
+		@RequestParam("umServer") String umServer, 
+		@RequestParam("appName") String appName,
+		@RequestParam("appVersion") String appVersion,
+		HttpServletRequest request)
+	{
+		UMMirror umMirror = getUmMirror(umServer);
+		if (umMirror == null || appName == null || appName.length() == 0 || appVersion == null || appVersion.length() == 0) {
+			return false;
+		}
+		
+		umMirror.addAppVersion(appName, appVersion);
+		return true;
+	}
+	
+	@RequestMapping(value=P.API_SET_APP_CONFIG, method=RequestMethod.POST)
+	@ResponseBody
+	public Object setAppConfig(
+		@RequestParam("umServer") String umServer, 
+		@RequestParam("appName") String appName,
+		@RequestParam("appVersion") String appVersion,
+		@RequestParam("key") String key,
+		@RequestParam("value") String value,
+		HttpServletRequest request)
+	{
+		UMMirror umMirror = getUmMirror(umServer);
+		if (umMirror == null 
+				|| appName == null || appName.length() == 0 
+				|| appVersion == null || appVersion.length() == 0
+				|| key == null || key.length() == 0
+				|| value == null || value.length() == 0) {
+			return false;
+		}
+		
+		umMirror.setAppConfig(appName, appVersion, key, value);
+		return true;
+	}
+	
+	@RequestMapping(value=P.API_DELETE_APP_CONFIG, method=RequestMethod.POST)
+	@ResponseBody
+	public Object deleteAppConfig(
+		@RequestParam("umServer") String umServer, 
+		@RequestParam("appName") String appName,
+		@RequestParam("appVersion") String appVersion,
+		@RequestParam("key") String key,
+		HttpServletRequest request)
+	{
+		UMMirror umMirror = getUmMirror(umServer);
+		if (umMirror == null 
+				|| appName == null || appName.length() == 0 
+				|| appVersion == null || appVersion.length() == 0
+				|| key == null || key.length() == 0) {
+			return false;
+		}
+		
+		umMirror.deleteAppConfig(appName, appVersion, key);
+		return true;
+	}
 }
