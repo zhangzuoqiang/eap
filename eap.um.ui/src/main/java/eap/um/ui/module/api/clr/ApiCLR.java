@@ -168,9 +168,9 @@ public class ApiCLR extends BaseController {
 		@RequestParam("appName") String appName,
 		@RequestParam("appVersion") String appVersion,
 		@RequestParam("key") String key,
-		@RequestParam("value") String value,
 		HttpServletRequest request)
 	{
+		String value = this.getParameterAsCleanHtml("value");
 		UMMirror umMirror = getUmMirror(umServer);
 		if (umMirror == null 
 				|| appName == null || appName.length() == 0 
