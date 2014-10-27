@@ -31,7 +31,7 @@ public class CliNodeListener extends NodeListener {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void nodeChanged(CuratorFramework client, ChildData childData) throws Exception {
-		byte[] dataBytes = childData.getData();
+		byte[] dataBytes = childData != null ? childData.getData() : null;
 		if (dataBytes != null && dataBytes.length > 0) {
 			String data = new String(dataBytes).trim();
 			String[] dataArr = data.split("\r\n");
@@ -101,7 +101,7 @@ public class CliNodeListener extends NodeListener {
 			argList.add(arg.toString());
 			cliData.setArgs(argList.toArray(new String[]{}));
 		} catch (Exception e) {
-			throw new IllegalArgumentException("cli error. sample: a.b.c.Main say arg1 \"arg2-1 arg2-2\" arg3", e);
+			throw new IllegalArgumentException("cli error, " + e.getClass() + "-> " + e.getMessage(), e);
 		}
 		
 		return cliData;
