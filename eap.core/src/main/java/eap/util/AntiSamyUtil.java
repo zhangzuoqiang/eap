@@ -5,7 +5,6 @@ import org.owasp.validator.html.CleanResults;
 import org.owasp.validator.html.Policy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import eap.EapContext;
@@ -50,8 +49,8 @@ public class AntiSamyUtil {
 		try {
 			Env env = EapContext.getEnv();
 			
-			String policyPath= env.getProperty("app.conf.antiSamy.policy.path", "antisamy_ebay_1.4.4.xml");
-			Resource resource = new ClassPathResource(policyPath);
+			String policyPath= env.getProperty("app.conf.antiSamy.policy.path", "classpath*:antisamy_ebay_1.4.4.xml");
+			Resource resource = ResourceUtil.getResource(policyPath);
 			Policy policy = Policy.getInstance(resource.getInputStream());
 			
 			antiSamy = new AntiSamy();
