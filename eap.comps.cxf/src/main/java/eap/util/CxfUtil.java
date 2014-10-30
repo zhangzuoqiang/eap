@@ -82,12 +82,12 @@ public class CxfUtil  {
 				isChange = true;
 			}
 			if (ReflectUtil.getFieldValue(httpClientPolicy, "connectionTimeout") == null) {
-				httpClientPolicy.setConnectionTimeout(Long.valueOf(env.getProperty("app.net.connectionTimeout", "30000")));
+				httpClientPolicy.setConnectionTimeout(Long.valueOf(env.getProperty("webService.connectionTimeout", "30000")));
 				
 				isChange = true;
 			}
 			if (ReflectUtil.getFieldValue(httpClientPolicy, "receiveTimeout") == null) {
-				httpClientPolicy.setReceiveTimeout(Long.valueOf(env.getProperty("app.net.soTimeout", "60000")));
+				httpClientPolicy.setReceiveTimeout(Long.valueOf(env.getProperty("webService.soTimeout", "60000")));
 				
 				isChange = true;
 			}
