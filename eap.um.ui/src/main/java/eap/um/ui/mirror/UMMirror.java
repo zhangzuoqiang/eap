@@ -1,9 +1,7 @@
 package eap.um.ui.mirror;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -56,20 +55,27 @@ public class UMMirror {
 	private BufferedTimer umRefreshTimer =  new BufferedTimer("umRefreshTimer", true);
 	
 	public UMMirror(String umServer) throws Exception {
-		Integer retryNum = Integer.MAX_VALUE;
+		Integer retryNum = 3;
 		Integer retryTimes = 3000;
-		Integer connectionTimeoutMs = 10000;
+//		Integer sessionTimeoutMs = 60000;
+//		Integer connectionTimeoutMs = 10000;
 		
-		final CountDownLatch connectedLatch = new CountDownLatch(1);
+		final AtomicInteger connectedLatch = new AtomicInteger(1);
+//		final CountDownLatch connectedLatch = new CountDownLatch(1);
 		client = CuratorFrameworkFactory.builder()
 			.connectString(umServer)
 			.retryPolicy(new RetryNTimes(retryNum, retryTimes))
-			.connectionTimeoutMs(connectionTimeoutMs).build();
+//			.sessionTimeoutMs(sessionTimeoutMs)
+//			.connectionTimeoutMs(connectionTimeoutMs)
+			.build();
 		
 		client.getCuratorListenable().addListener(new CuratorListener() {
 			public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
-				if (connectedLatch.getCount() > 0 && event.getWatchedEvent() != null && event.getWatchedEvent().getState() == KeeperState.SyncConnected) {
-					connectedLatch.countDown();
+//				if (connectedLatch.getCount() > 0 && event.getWatchedEvent() != null && event.getWatchedEvent().getState() == KeeperState.SyncConnected) {
+//					connectedLatch.countDown();
+//				}
+				if (connectedLatch.get() > 0 && event.getWatchedEvent() != null && event.getWatchedEvent().getState() == KeeperState.SyncConnected) {
+					connectedLatch.decrementAndGet();
 				}
 			}
 		});
@@ -78,8 +84,14 @@ public class UMMirror {
 				logger.error(message, e);
 			}
 		});
-		client.start();
-		connectedLatch.await();
+		client.start(); // TODO java.net.ConnectException: Connection refused
+//		connectedLatch.await();
+		
+		Thread.sleep(3000);
+		if (connectedLatch.get() > 0) {
+			client.close();
+			throw new IllegalStateException("Connection refused");
+		}
 		
 		syncUmMirror();
 	}
@@ -90,6 +102,10 @@ public class UMMirror {
 		nodeWatcher = new NodeWatcher(client, new NodeWatcher.NodeListener() {
 			@Override
 			public void childEvent(CuratorFramework client, PathChildrenCacheEvent event, NodeWatcher watcher) throws Exception {
+				if (event == null || event.getData() == null) {
+					return;
+				}
+				
 //				System.out.println("childEvent ->" + event.getData().getPath());
 				String path = event.getData().getPath();
 				if (PathChildrenCacheEvent.Type.CHILD_REMOVED == event.getType()) {

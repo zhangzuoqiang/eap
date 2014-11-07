@@ -2,7 +2,8 @@ package eap.um.ui.mirror;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.annotation.PreDestroy;
 
@@ -26,30 +27,41 @@ import org.springframework.stereotype.Service;
 public class UMMirrorRepository {
 	
 	private Map<String, UMMirror> umMirrors = new ConcurrentHashMap<String, UMMirror>();
-	private ReentrantLock lock = new ReentrantLock();
+//	private ReentrantLock lock = new ReentrantLock();
+	private ReadWriteLock lock = new ReentrantReadWriteLock();
 	
 	public UMMirror getMirror(String umServer, boolean createForNotFound) {
 		if (umServer == null || umServer.length() == 0) {
 			return null;
 		}
 		
+		UMMirror umMirror = null;
 		try {
-			lock.lock();
-			UMMirror umMirror = umMirrors.get(umServer);
-			if (umMirror == null) {
-				if (createForNotFound) {
-					try {
-						umMirror = new UMMirror(umServer);
-						umMirrors.put(umServer, umMirror);
-					} catch (Exception e) {
-						throw new IllegalArgumentException(e.getMessage(), e);
-					}
+			
+			lock.readLock().lock();
+			umMirror = umMirrors.get(umServer);
+		} finally {
+			lock.readLock().unlock();
+		}
+		if (umMirror != null) {
+			return umMirror;
+		}
+		
+		try {
+			lock.writeLock().lock();
+			if (createForNotFound) {
+				try {
+					umMirror = new UMMirror(umServer);
+					umMirrors.put(umServer, umMirror);
+				} catch (Exception e) {
+					throw new IllegalArgumentException(e.getMessage(), e);
 				}
 			}
-			return umMirror;
 		} finally {
-			lock.unlock();
+			lock.writeLock().unlock();
 		}
+		
+		return umMirror;
 	}
 	
 	public void shutdownMirror(String umServer) {

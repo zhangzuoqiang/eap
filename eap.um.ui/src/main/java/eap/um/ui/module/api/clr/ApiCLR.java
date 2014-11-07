@@ -44,7 +44,7 @@ public class ApiCLR extends BaseController {
 	public Object appList(@RequestParam("umServer") String umServer) {
 		UMMirror umMirror = getUmMirror(umServer);
 		if (umMirror == null) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 		return umMirror.getAppList();
@@ -58,7 +58,7 @@ public class ApiCLR extends BaseController {
 	{
 		UMMirror umMirror = getUmMirror(umServer);
 		if (umMirror == null || appName == null || appName.length() == 0) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 		return umMirror.getAppServerList(appName);
@@ -75,7 +75,7 @@ public class ApiCLR extends BaseController {
 		if (umMirror == null 
 			|| appName == null || appName.length() == 0
 			|| appVersion == null || appVersion.length() == 0) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 		return umMirror.getAppConfig(appName, appVersion);
@@ -89,7 +89,7 @@ public class ApiCLR extends BaseController {
 	{
 		UMMirror umMirror = getUmMirror(umServer);
 		if (umMirror == null || appName == null || appName.length() == 0) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 		return umMirror.getAppVersionList(appName);
@@ -103,7 +103,7 @@ public class ApiCLR extends BaseController {
 	{
 		UMMirror umMirror = getUmMirror(umServer);
 		if (umMirror == null || appName == null || appName.length() == 0) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 		return umMirror.getAppServerCliList(appName);
