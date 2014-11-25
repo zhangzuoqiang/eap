@@ -581,15 +581,20 @@
 					</suiteXmlFiles> </configuration> -->
 			</plugin>
 		</plugins>
-		<!-- <resources>
+		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 				<includes>
-					<include>eap_env.properties</include>
 					<include>env.properties</include>
 				</includes>
 			</resource>
-		</resources> -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>env.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
 	</build>
 </project>
