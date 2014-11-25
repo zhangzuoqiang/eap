@@ -90,7 +90,12 @@ public class Env extends StandardEnvironment implements Map<String, Object> {
 		
 		if (StringUtils.isNotBlank(path)) {
 			try {
-				envProperties.getSource().putAll(new ResourcePropertySource(ResourceUtil.getResource(path)).getSource());
+				if (envProperties == null) {
+					envProperties = new ResourcePropertySource(name, ResourceUtil.getResource(path));
+				} else {
+					envProperties.getSource().putAll(new ResourcePropertySource(ResourceUtil.getResource(path)).getSource());
+				}
+				
 				logger.info("loaded env file: " + path);
 			} catch (Exception e) {
 				logger.info(e.getMessage(), e);
