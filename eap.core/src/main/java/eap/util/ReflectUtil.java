@@ -22,8 +22,15 @@ import org.springframework.util.ReflectionUtils;
  */
 public class ReflectUtil extends ReflectionUtils {
 	
-	public static Field getField(Class<?> clazz, String fieldName) {
-		Field field = findField(clazz, fieldName);
+//	public static Field getField(Class<?> clazz, String fieldName) {
+//		Field field = findField(clazz, fieldName);
+//		makeAccessible(field);
+//
+//		return field;
+//	}
+	
+	public static Field getField(Object target, String fieldName) {
+		Field field = findField((target instanceof Class) ? (Class<?>)target : target.getClass(), fieldName);
 		makeAccessible(field);
 
 		return field;
@@ -35,12 +42,12 @@ public class ReflectUtil extends ReflectionUtils {
 	}
 	
 	public static Object getFieldValue(Object target, String fieldName) {
-		Field field = getField(target.getClass(), fieldName);
+		Field field = getField(target, fieldName);
 		return getField(field, target);
 	}
 	
 	public static void setFieldValue(Object target, String fieldName, Object value) {
-		Field field = getField(target.getClass(), fieldName);
+		Field field = getField(target, fieldName);
 		setField(field, target, value);
 	}
 	
