@@ -185,6 +185,34 @@ public class UrlUtil { // AntPathMatcher
 		
 		return result.toString();
 	}
+	public static String formatUrl(String url, String[][] params) {
+		if (params == null || params.length == 0) {
+			return url;
+		}
+		
+		StringBuilder result = new StringBuilder();
+		
+		char[] chars = url.toCharArray();
+		for (int i = 0; i < chars.length; i++) {
+			char c = chars[i];
+			if (c == '{') {
+				int idx_s = i;
+				while (chars[++i] != '}') {}
+				int idx_e = i;
+				
+				String name = url.substring(idx_s + 1, idx_e);
+				for (String[] param : params) {
+					if (name.equals(param[0])) {
+						result.append((param[1]));
+					}
+				}
+			} else {
+				result.append(c);
+			}
+		}
+		
+		return result.toString();
+	}
 	
 	public static String encode(String text, String encoding) {
 		if (StringUtils.isBlank(text)) {
@@ -378,8 +406,14 @@ public class UrlUtil { // AntPathMatcher
 //		String urlll = "http://analytics2.caidor.com/www/a.js?dddd";
 //		System.out.println(getRelativePath(s111));
 //		System.out.println(getRelativePath(urlll));
+		
+		String u1 = "a{appId}b{scope}c";
+		System.out.println(formatUrl(u1, new String[][] {
+			{"appId", "123"},
+			{"scope", "456"}
+		}));
 //		
-//		if (true) return;
+		if (true) return;
 		
 		List<String> list=new ArrayList<String>();
 		list.add("http://www.baidu.com/s?wd=%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%95%99%E7%A8%8B&rsv_spt=1&issp=1&rsv_bp=0&ie=utf-8&tn=baiduhome_pg&rsv_sug3=1&rsv_sug1=1&rsv_sug4=458&oq=%E6%AD%A3%E5%88%99&rsp=6&f=3&rsv_sug5=0");
