@@ -25,6 +25,7 @@ import org.w3c.dom.Element;
  * ----------------------------------------
  * </pre>
  * @see org.apache.cxf.helpers.XMLUtils
+ * @ses Open Declarationorg.springframework.util.xml.DomUtils
  */
 public class DomUtil {
 	private static final Map<ClassLoader, DocumentBuilderFactory> DOCUMENT_BUILDER_FACTORIES = Collections.synchronizedMap(new WeakHashMap<ClassLoader, DocumentBuilderFactory>());
