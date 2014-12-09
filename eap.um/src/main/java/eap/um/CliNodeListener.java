@@ -1,8 +1,11 @@
 package eap.um;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -41,33 +44,46 @@ public class CliNodeListener extends NodeListener {
 			logger.info("received data: " + data);
 			
 			String cliDataStr = dataArr[0];
-			client.setData().forPath(childData.getPath(), (cliDataStr + "\r\n" + "InProgress").getBytes());
 			
 			try {
-				CliData cliData = parseCliData(cliDataStr);
-				String className = cliData.getClassName();
-				String methodName = cliData.getMethod();
-				String[] args = cliData.getArgs();
+				client.setData().forPath(childData.getPath(), (cliDataStr + "\r\n" + "InProgress").getBytes());
 				
-				Class clazz = Class.forName(className);
-				Method method = args != null ? clazz.getDeclaredMethod(methodName, String[].class) : clazz.getDeclaredMethod(methodName, null);
-				Object obj = null;
-				if ((method.getModifiers() & Modifier.STATIC) != 0) {
-					obj = clazz;
+				if ("now".equalsIgnoreCase(cliDataStr)) {
+					cliDataStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 				} else {
-					obj = clazz.newInstance();
-				}
-				
-				if (args != null) {
-					method.invoke(obj, (Object)args);
-				} else {
-					method.invoke(obj);
+					CliData cliData = parseCliData(cliDataStr);
+					String className = cliData.getClassName();
+					String methodName = cliData.getMethod();
+					String[] args = cliData.getArgs();
+					
+					Class clazz = Class.forName(className);
+					Method method = args != null ? clazz.getDeclaredMethod(methodName, String[].class) : clazz.getDeclaredMethod(methodName, null);
+					Object obj = null;
+					if ((method.getModifiers() & Modifier.STATIC) != 0) {
+						obj = clazz;
+					} else {
+						obj = clazz.newInstance();
+					}
+					
+					if (args != null) {
+						method.invoke(obj, (Object)args);
+					} else {
+						method.invoke(obj);
+					}
 				}
 				
 				client.setData().forPath(childData.getPath(), (cliDataStr + "\r\n" + "Success").getBytes());
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
-				client.setData().forPath(childData.getPath(), (cliDataStr + "\r\n" + "Failure" + "\r\n" + e.getMessage()).getBytes());
+				
+				String message = null;
+				if (e instanceof InvocationTargetException) {
+					InvocationTargetException ite = (InvocationTargetException) e;
+					message = ite.getMessage();
+				} else {
+					message = e.getMessage();
+				}
+				client.setData().forPath(childData.getPath(), (cliDataStr + "\r\n" + "Failure" + "\r\n" + e.getClass() + ": " + message).getBytes());
 			}
 		}
 	}
