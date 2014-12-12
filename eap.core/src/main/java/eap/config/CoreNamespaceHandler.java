@@ -22,8 +22,9 @@ public class CoreNamespaceHandler extends NamespaceHandlerSupport {
 	public void init() {
 		registerBeanDefinitionParser("init", new InitBeanDefinitionParser());
 		registerBeanDefinitionParser("propertyPlaceholder", new PropertyPlaceholderBeanDefinitionParser());
+		registerBeanDefinitionParser("componentScan", new ComponentScanBeanDefinitionParser());
 		registerBeanDefinitionParser("dataSource", new DataSourceBeanDefinitionParser());
 		registerBeanDefinitionParser("transaction", new TransactionBeanDefinitionParser());
-		registerBeanDefinitionParser("componentScan", new ComponentScanBeanDefinitionParser());
+		registerBeanDefinitionParser("performanceMonitor", new PerformanceMonitorBeanDefinitionParser());
 	}
 }

@@ -19,6 +19,16 @@
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
+	<xsd:element name="componentScan">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="beans:identifiedType">
+					<xsd:attribute name="basePackage" type="xsd:string" />
+					<xsd:attribute name="isController" type="xsd:string" />
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
 	<xsd:element name="dataSource">
 		<xsd:complexType>
 			<xsd:complexContent>
@@ -42,14 +52,14 @@
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-	<xsd:element name="componentScan">
+	<xsd:element name="performanceMonitor">
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="beans:identifiedType">
-					<xsd:attribute name="basePackage" type="xsd:string" />
-					<xsd:attribute name="isController" type="xsd:string" />
+					<xsd:attribute name="proxyTargetClass" type="xsd:string" />
+					<xsd:attribute name="patterns" type="xsd:string" />
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-</xsd:schema> 
+</xsd:schema>
