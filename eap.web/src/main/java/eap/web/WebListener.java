@@ -201,7 +201,7 @@ public class WebListener extends ContextLoaderListener implements ServletContext
 							filterDinamic.setInitParameter(key0.substring(initParameterPrefix.length()), (String)entry0.getValue());
 						}
 					}
-					filterDinamic.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, StringUtil.split((String)filters.get(key + ".urlPatterns")));
+					filterDinamic.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, StringUtil.split((String)filters.get(key + ".urlPatterns"), WebEnv.VALUES_SEPARATOR));
 				}
 			}
 		}
