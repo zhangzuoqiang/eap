@@ -3,7 +3,11 @@ package eap.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -87,5 +91,28 @@ public class ReflectUtil extends ReflectionUtils {
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e.getMessage(), e);
 		}
+	}
+	
+	public static Map<String, Object> getClassConstants(String className) {
+		Map<String, Object> constants = new HashMap<String, Object>();
+		
+		try {
+			Class clazz = ClassUtils.forName(className);
+			
+			Field[] fields = clazz.getFields();
+			for (Field field : fields) {
+				int modifiers = field.getModifiers();
+				if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
+					Object value = field.get(null);
+					if (value != null) {
+						constants.put(field.getName(), value);
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new IllegalArgumentException(e.getMessage(), e);
+		}
+		
+		return constants;
 	}
 }
