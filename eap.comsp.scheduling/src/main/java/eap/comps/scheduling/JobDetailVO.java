@@ -37,9 +37,9 @@ public class JobDetailVO {
 
 	private boolean shouldRecover = false; // 恢复
 	
-	private boolean concurrentExectionDisallowed;
+	private Boolean concurrentExectionDisallowed;
 	
-	private boolean persistJobDataAfterExecution;
+	private Boolean persistJobDataAfterExecution;
 
 	public String getName() {
 		return name;
@@ -88,7 +88,6 @@ public class JobDetailVO {
 	public String getJobParams() {
 		return jobParams;
 	}
-
 	public void setJobParams(String jobParams) {
 		this.jobParams = jobParams;
 		
@@ -96,36 +95,28 @@ public class JobDetailVO {
 			this.jobDataMap = JsonUtil.parseJson(jobParams, HashMap.class); // TODO htmlUnescape
 		}
 	}
-
 	public boolean isDurability() {
 		return durability;
 	}
-
 	public void setDurability(boolean durability) {
 		this.durability = durability;
 	}
-
 	public boolean isShouldRecover() {
 		return shouldRecover;
 	}
-
 	public void setShouldRecover(boolean shouldRecover) {
 		this.shouldRecover = shouldRecover;
 	}
-
-	public boolean isConcurrentExectionDisallowed() {
+	public Boolean getConcurrentExectionDisallowed() {
 		return concurrentExectionDisallowed;
 	}
-
-	public void setConcurrentExectionDisallowed(boolean concurrentExectionDisallowed) {
+	public void setConcurrentExectionDisallowed(Boolean concurrentExectionDisallowed) {
 		this.concurrentExectionDisallowed = concurrentExectionDisallowed;
 	}
-
-	public boolean isPersistJobDataAfterExecution() {
+	public Boolean getPersistJobDataAfterExecution() {
 		return persistJobDataAfterExecution;
 	}
-
-	public void setPersistJobDataAfterExecution(boolean persistJobDataAfterExecution) {
+	public void setPersistJobDataAfterExecution(Boolean persistJobDataAfterExecution) {
 		this.persistJobDataAfterExecution = persistJobDataAfterExecution;
 	}
 }

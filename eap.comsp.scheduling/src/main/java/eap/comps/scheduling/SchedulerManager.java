@@ -35,7 +35,6 @@ import org.springframework.core.Ordered;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.util.Assert;
 
-import eap.um.UM;
 import eap.util.BeanUtil;
 import eap.util.StringUtil;
 
@@ -364,8 +363,21 @@ public class SchedulerManager implements DisposableBean, Ordered {
 		
 		return jobDetailVO;
 	}
-	private static JobDetail toJobDetail(JobDetailVO jobDetailVO) {
-		JobDetailImpl jobDetail = new JobDetailImpl();
+	private static JobDetail toJobDetail(final JobDetailVO jobDetailVO) {
+		JobDetailImpl jobDetail = new JobDetailImpl() {
+			public boolean isConcurrentExectionDisallowed() {
+				if (jobDetailVO.getConcurrentExectionDisallowed() != null) {
+					return jobDetailVO.getConcurrentExectionDisallowed();
+				}
+				return super.isConcurrentExectionDisallowed();
+			}
+			public boolean isPersistJobDataAfterExecution() {
+				if (jobDetailVO.getPersistJobDataAfterExecution() != null) {
+					return jobDetailVO.getPersistJobDataAfterExecution();
+				}
+				return super.isPersistJobDataAfterExecution();
+			}
+		};
 		jobDetail.setKey(new JobKey(jobDetailVO.getName(), jobDetailVO.getGroup()));
 		jobDetail.setDescription(jobDetailVO.getDescription());
 		jobDetail.setJobClass(jobDetailVO.getJobClass());
@@ -374,6 +386,8 @@ public class SchedulerManager implements DisposableBean, Ordered {
 		}
 		jobDetail.setDurability(jobDetailVO.isDurability());
 		jobDetail.setRequestsRecovery(jobDetailVO.isShouldRecover());
+//		jobDetail.isConcurrentExectionDisallowed();
+//		jobDetail.isPersistJobDataAfterExecution();
 		
 		return jobDetail;
 	}
@@ -406,10 +420,12 @@ public class SchedulerManager implements DisposableBean, Ordered {
 			triggerVO.setCronEx(ct.getCronExpression());
 			triggerVO.setTimeZone(ct.getTimeZone());
 		} 
-		else if (trigger  instanceof SimpleTrigger) {
+		else if (trigger instanceof SimpleTrigger) {
+//			SimpleTriggerImpl ct = (SimpleTriggerImpl) trigger;
 			triggerVO.setType(TriggerVO.TRIGGER_TYPE_SIMPLE);
 		} 
 		else if (trigger instanceof DailyTimeIntervalTrigger) {
+//			DailyTimeIntervalTrigger ct = (DailyTimeIntervalTrigger) trigger;
 			triggerVO.setType(TriggerVO.TRIGGER_TYPE_DAILY_TIME);
 		} 
 		else if (trigger instanceof CalendarIntervalTrigger) {
@@ -464,13 +480,13 @@ public class SchedulerManager implements DisposableBean, Ordered {
 				
 				Object startupDelayObj = schedulerProps.get("startupDelay");
 				if (startupDelayObj != null && StringUtil.isNumeric(startupDelayObj.toString()) && Integer.parseInt(startupDelayObj.toString()) >= 0) {
-					if (UM.isEnabled() && UM.isStarted()) {
-						if (UM.isLeader()) {
-							sfb.start();
-						}
-					} else {
+//					if (UM.isEnabled() && UM.isStarted()) {
+//						if (UM.isLeader()) {
+//							sfb.start();
+//						}
+//					} else {
 						sfb.start();
-					}
+//					}
 				}
 				
 				Scheduler scheduler = sfb.getObject();
