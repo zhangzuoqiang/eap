@@ -208,6 +208,9 @@ public class BaseController {
 		
 		return html;
 	}
+	public void transferAttribute(String name) {
+		getRequest().setAttribute(name, getParameter(name));
+	}
 	
 	public UserDetailsVO currUserDetailsVO() {
 //		return (UserDetailsVO) this.getSession().getAttribute(Env.SESSION_USER_DETAILS_KEY);
