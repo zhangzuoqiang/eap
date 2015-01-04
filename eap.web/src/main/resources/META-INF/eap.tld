@@ -1836,6 +1836,27 @@
 		</attribute>
 	</tag>
 	
+	<tag>
+		<name>useConstants</name>
+		<tagclass>eap.web.jstl.tags.UseConstantsTag</tagclass>
+		<bodycontent>empty</bodycontent>
+		<attribute>
+			<name>var</name>
+			<required>yes</required>
+			<rtexprvalue>no</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>className</name>
+			<required>yes</required>
+			<rtexprvalue>no</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>scope</name>
+			<required>no</required>
+			<rtexprvalue>no</rtexprvalue>
+		</attribute>
+  </tag>
+	
 	<!-- ========================================== -->
 	<!-- Functions                                  -->
 	<!-- ========================================== -->
