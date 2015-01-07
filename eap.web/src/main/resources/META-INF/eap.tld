@@ -1838,8 +1838,8 @@
 	
 	<tag>
 		<name>useConstants</name>
-		<tagclass>eap.web.jstl.tags.UseConstantsTag</tagclass>
-		<bodycontent>empty</bodycontent>
+		<tag-class>eap.web.jstl.tags.UseConstantsTag</tag-class>
+		<body-content>JSP</body-content>
 		<attribute>
 			<name>var</name>
 			<required>yes</required>
@@ -1855,7 +1855,7 @@
 			<required>no</required>
 			<rtexprvalue>no</rtexprvalue>
 		</attribute>
-  </tag>
+	</tag>
 	
 	<!-- ========================================== -->
 	<!-- Functions                                  -->
