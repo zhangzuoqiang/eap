@@ -1,5 +1,6 @@
 package eap.web;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ import eap.EapStartupLogger;
 import eap.Env;
 import eap.TopicManager;
 import eap.WebEnv;
+import eap.log.LogManager;
 import eap.um.UM;
 import eap.util.BeanUtil;
 import eap.util.JsonUtil;
@@ -75,34 +77,8 @@ public class WebListener extends ContextLoaderListener implements ServletContext
 		
 		EapContext.init(contextHolder);
 		env = EapContext.getEnv();
+		refreshEnv();
 		
-		if (UM.isEnabled()) {
-			try {
-				UM.start();
-				
-				final CountDownLatch firstLoadedLatch = new CountDownLatch(1); // first loaded form UM
-				UM.addListener(UM.envPath, new UM.NodeListener() {
-					public void nodeChanged(CuratorFramework client, ChildData childData) throws Exception {
-						byte[] data = childData != null ? childData.getData() : null;
-						Map<String, String> envMap = null;
-						if (data != null && data.length > 0) {
-							envMap = JsonUtil.parseJson(new String(data), LinkedHashMap.class);
-						} else {
-							envMap = new LinkedHashMap<String, String>();
-						}
-						env.refresh(envMap);
-						firstLoadedLatch.countDown();
-					}
-				});
-				firstLoadedLatch.await();
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error(e.getMessage(), e);
-				return;
-			}
-		} else {
-			env.refresh(null);
-		}
 		
 		EapContext.publish("$context.initializing", event);
 		
@@ -123,7 +99,10 @@ public class WebListener extends ContextLoaderListener implements ServletContext
 		}
 		
 		EapContext.publish("$context.initialized", event);
+		
+		refreshLog();
 	}
+	
 	@Override
 	public void contextDestroyed(ServletContextEvent event) {
 		EapContext.publish("$context.destroying", event);
@@ -301,4 +280,67 @@ public class WebListener extends ContextLoaderListener implements ServletContext
 		EapContext.publish("$request.destroyed", event);
 	}
 	// END: ServletRequestListener
+	
+	private void refreshEnv() {
+		if (UM.isEnabled()) {
+			try {
+				if (!UM.isStarted()) {
+					UM.start();
+				}
+				
+				final CountDownLatch firstLoadedLatch = new CountDownLatch(1); // first loaded form UM
+				UM.addListener(UM.envPath, new UM.NodeListener() {
+					public void nodeChanged(CuratorFramework client, ChildData childData) throws Exception {
+						byte[] data = childData != null ? childData.getData() : null;
+						Map<String, String> envMap = null;
+						if (data != null && data.length > 0) {
+							envMap = JsonUtil.parseJson(new String(data), LinkedHashMap.class);
+						} else {
+							envMap = new LinkedHashMap<String, String>();
+						}
+						env.refresh(envMap);
+						firstLoadedLatch.countDown();
+					}
+				});
+				firstLoadedLatch.await();
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(e.getMessage(), e);
+				return;
+			}
+		} else {
+			env.refresh(null);
+		}
+	}
+	
+	private void refreshLog() {
+		if (UM.isEnabled()) {
+			try {
+				if (!UM.isStarted()) {
+					UM.start();
+				}
+				
+				if (UM.getClient().checkExists().forPath(UM.umConfigNS + "/log") != null) {
+					final CountDownLatch firstLoadedLatch = new CountDownLatch(1); // first loaded form UM
+					UM.addListener(UM.umConfigNS + "/log", new UM.NodeListener() {
+						public void nodeChanged(CuratorFramework client, ChildData childData) throws Exception {
+							byte[] data = childData != null ? childData.getData() : null;
+							if (data != null && data.length > 0) {
+								ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+								LogManager.reconfiguring(inputStream);
+							} else {
+								LogManager.reconfiguring(null);
+							}
+							firstLoadedLatch.countDown();
+						}
+					});
+					firstLoadedLatch.await();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(e.getMessage(), e);
+				return;
+			}
+		}
+	}
 }
