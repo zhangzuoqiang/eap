@@ -39,7 +39,11 @@ public class LogManager {
 		lc.reset();
 		long threshold = System.currentTimeMillis();
 		try {
-			jc.doConfigure(inputStream);
+			if (inputStream != null) {
+				jc.doConfigure(inputStream);
+			} else if (mainURL != null) {
+				jc.doConfigure(mainURL);
+			}
 			if (statusUtil.hasXMLParsingErrors(threshold)) {
 				fallbackConfiguration(lc, eventList, mainURL);
 			}
