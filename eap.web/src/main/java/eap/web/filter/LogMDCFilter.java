@@ -28,6 +28,7 @@ import eap.util.HttpUtil;
 public class LogMDCFilter extends EnhanceFilter {
 	
 	public static final String MDC_KEY_IP = "ip";
+	public static final String MDC_KEY_SESSIONID = "sessionId";
 	
 	@Override
 	protected void doFilterCleaned(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -36,6 +37,9 @@ public class LogMDCFilter extends EnhanceFilter {
 		try {
 			if (MDC.get(MDC_KEY_IP) == null) { // current thread already set ip
 				MDC.put(MDC_KEY_IP, HttpUtil.getRemoteAddr(request));
+			}
+			if (MDC.get(MDC_KEY_SESSIONID) == null) {
+				MDC.put(MDC_KEY_SESSIONID, request.getSession().getId());
 			}
 			
 //			MDC.put("serverIp", System.getProperty("app.ip", InetAddress.getLocalHost().getHostAddress()));
