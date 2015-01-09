@@ -29,7 +29,7 @@ public class EapStartupLogger {
 	
 	public static void printStartingMessage() { // ServletContext context
 		LogMsgBuilder logMsg = new LogMsgBuilder();
-		logMsg.add("EAP Starting");
+		logMsg.add("EAP Starting - https://github.com/chiknin/eap");
 		
 		logMsg.outputHeader("Environment");
 //		if (context != null) {
@@ -56,7 +56,7 @@ public class EapStartupLogger {
 		public LogMsgBuilder add(String msg) {
 			logMsg.append(NEW_LINE)
 				.append("/////////////////////////////////////////////////////").append(NEW_LINE)
-				.append("\t\t" + msg).append(NEW_LINE)
+				.append("    " + msg).append(NEW_LINE)
 				.append("/////////////////////////////////////////////////////");
 			return this;
 		}
