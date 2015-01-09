@@ -1,11 +1,13 @@
 package eap.web;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import javax.servlet.DispatcherType;
@@ -55,7 +57,30 @@ import eap.util.StringUtil;
  */
 public class WebListener extends ContextLoaderListener implements ServletContextListener, HttpSessionListener, ServletRequestListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(WebListener.class);
+	static { // top init
+		Properties envProps = new Properties();
+		InputStream envInputStream = WebListener.class.getResourceAsStream("/env.properties");
+		if (envInputStream != null) {
+			try {
+				envProps.load(envInputStream);
+				
+				if (StringUtil.isBlank(System.getProperty("app.name"))) {
+					System.setProperty("app.name", envProps.getProperty("app.name"));
+				}
+				if (StringUtil.isBlank(System.getProperty("app.version"))) {
+					System.setProperty("app.version", envProps.getProperty("app.version"));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					envInputStream.close();
+				} catch (Exception e) {}
+			}
+		}
+	}
+	
+	private Logger logger = LoggerFactory.getLogger(WebListener.class);
 	
 	private Env env = null;
 	
@@ -78,7 +103,6 @@ public class WebListener extends ContextLoaderListener implements ServletContext
 		EapContext.init(contextHolder);
 		env = EapContext.getEnv();
 		refreshEnv();
-		
 		
 		EapContext.publish("$context.initializing", event);
 		
