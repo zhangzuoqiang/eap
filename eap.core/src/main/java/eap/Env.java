@@ -140,7 +140,7 @@ public class Env extends StandardEnvironment implements Map<String, Object> {
 		return null;
 	}
 	private void store(Map<String, String> overwriteEnvMap) throws IOException {
-		Resource envResource = ResourceUtil.getResource(configPath);
+		Resource envResource = ResourceUtil.getResource(configPath); // TODO bak env.properties
 		Properties newEnvProperties = new Properties();
 		newEnvProperties.putAll(new ResourcePropertySource(envResource).getSource());
 		newEnvProperties.putAll(overwriteEnvMap);
