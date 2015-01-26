@@ -2,10 +2,13 @@ package eap.util;
 
 import java.text.SimpleDateFormat;
 
+import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
+import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
@@ -39,10 +42,16 @@ public class JacksonObjectMapperFactory implements FactoryBean<ObjectMapper> {
 		sc.withDateFormat(fullDateSdf);
 		sc.setDateFormat(fullDateSdf);
 		
-		DeserializationConfig desc = objectMapper.getDeserializationConfig();
-		desc.withDateFormat(fullDateSdf);
-		desc.setDateFormat(fullDateSdf);
-		desc.disable(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
+		DeserializationConfig dc = objectMapper.getDeserializationConfig();
+		dc.withDateFormat(fullDateSdf);
+		dc.setDateFormat(fullDateSdf);
+		dc.disable(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
+		
+		AnnotationIntrospector primaryIntrospector = new JacksonAnnotationIntrospector();
+		AnnotationIntrospector secondaryIntropsector = new JaxbAnnotationIntrospector();
+		AnnotationIntrospector pairIntropsector = new AnnotationIntrospector.Pair(primaryIntrospector, secondaryIntropsector);
+		sc.setAnnotationIntrospector(pairIntropsector);
+		dc.setAnnotationIntrospector(pairIntropsector);
 		
 		return objectMapper;
 	}
