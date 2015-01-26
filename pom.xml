@@ -142,6 +142,16 @@
 				<version>1.9.9</version>
 			</dependency>
 			<dependency>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-xc</artifactId>
+				<version>1.9.9</version>
+			</dependency>
+			<!-- <dependency>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-jaxrs</artifactId>
+				<version>1.9.9</version>
+			</dependency> -->
+			<dependency>
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-validator</artifactId>
 				<version>4.2.0.Final</version>
@@ -597,4 +607,31 @@
 			</resource>
 		</resources>
 	</build>
+	
+	<scm>
+		<connection>scm:git:git@github.com:chiknin/eap.git</connection>
+		<developerConnection>scm:git:git@github.com:chiknin/eap.git</developerConnection>
+		<url>https://github.com/chiknin/eap</url>
+	</scm>
+	
+	<issueManagement>
+		<system>git issues</system>
+		<url>https://github.com/chiknin/eap/issues</url>
+	</issueManagement>
+	
+	<developers>
+		<developer>
+			<id>chiknin</id>
+			<name>chiknin</name>
+			<email>chiknin@gmail.com</email>
+			<timezone>8</timezone>
+		</developer>
+	</developers>
+	
+	<licenses>
+		<license>
+			<name>Apache License,Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
 </project>
