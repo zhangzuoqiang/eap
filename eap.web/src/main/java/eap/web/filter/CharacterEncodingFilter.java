@@ -36,7 +36,7 @@ public class CharacterEncodingFilter extends EnhanceFilter {
 	protected void doFilterCleaned(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException 
 	{
-		String charset = UrlUtil.getUrlQueryStringAsMap(request.getQueryString()).get(onceCharsetParamName);
+		String charset = UrlUtil.getUrlQueryStringAsMap("?" + request.getQueryString()).get(onceCharsetParamName); // TODO
 		if (StringUtil.isBlank(charset)) {
 			charset = encoding;
 		}
